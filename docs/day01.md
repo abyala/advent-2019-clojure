@@ -69,5 +69,26 @@ then run one of the two fuel calculations before adding together all of the fuel
 
 (def part1 (partial solve fuel-required))
 (def part2 (partial solve recursive-fuel-required))
+```
 
+---
+
+## Refactoring
+
+I realized after completing this project that the `solve` function is an excellent use case for a transducer. I can't
+find a description of a transducer that normal humans can understand, so here's my explanation -- given a sequence of
+values, transduction isolates the concepts of "what should I do to each value as I read it" from "how do I combine
+the results of the first step into a final result." In this case, the first step for both `part1` and `part2` is to
+parse each line and run a calculation, and the second step is to add the values together.
+
+The `transduce` function takes in 3 or 4 arguments, and I use 3 in this scenario. The first argument is the function
+to apply to each value as it is processed, so in this case that is `(map (comp calc parse-long))` as we saw in the
+original solution. The second argument is the reducing function to apply, so that's just `+`. I'm omitting the
+initial value argument, since the `+` function will correctly use a default value of `0` automatically. Finally, the
+last argument is the input sequence, which is `(str/split-lines input)`. Thus, we have a very simple one-liner for the
+`solve` function which, under the hood, might even be more efficient than the original pipeline.
+
+```clojure
+(defn solve [calc input]
+  (transduce (map (comp calc parse-long)) + (str/split-lines input)))
 ```

@@ -13,9 +13,7 @@
        (reduce +)))
 
 (defn solve [calc input]
-  (->> (str/split-lines input)
-       (map (comp calc parse-long))
-       (reduce +)))
+  (transduce (map (comp calc parse-long)) + (str/split-lines input)))
 
 (def part1 (partial solve fuel-required))
 (def part2 (partial solve recursive-fuel-required))
