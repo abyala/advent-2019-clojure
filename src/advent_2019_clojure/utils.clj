@@ -5,6 +5,8 @@
                        (Long/parseLong s)
                        (catch NumberFormatException _ nil)))
 
+(defn abs [^long x] (Math/abs x))
+
 (defn bytes->hex [b]
   (->> b
        (map (comp #(if (= 1 (count %)) (str "0" %) %)
