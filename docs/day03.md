@@ -34,10 +34,10 @@ only `distance` number of values. Since the first result is always the initial v
 
 ```clojure
 ; advent-2019-clojure.point namespace
-(defn move-up    [[x y]] [x (inc y)])
-(defn move-down  [[x y]] [x (dec y)])
-(defn move-left  [[x y]] [(dec x) y])
-(defn move-right [[x y]] [(inc x) y])
+(defn move-up    [point] (update point 1 inc))
+(defn move-down  [point] (update point 1 dec))
+(defn move-left  [point] (update point 0 dec))
+(defn move-right [point] (update point 0 inc))
 
 ; advent-2019-clojure.day03 namespace
 (def direction-map {:up    point/move-up
