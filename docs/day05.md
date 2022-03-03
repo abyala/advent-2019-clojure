@@ -46,18 +46,21 @@ and value, respectively.
                :outputs             []}))
 ```
 
-Since inputs are provided up-front and are used only once, it looks like we only need three helper functions.
-`add-output` appends a value to the end of the output vector. `inputs` just returns all of the (yet-unread) input
-values, and `drop-inputs` removes one or more inputs as we consume them in upcoming functions.
+Since inputs are provided up-front and are used only once, it looks like we only need four helper functions.
+`drop-inputs` removes one or more inputs as we consume them in upcoming functions, while `inputs` just returns all of
+the (yet-unread) input values. Similarly, `add-output` appends a value to the end of the output vector, and
+`outputs` returns all of the outputs.
 
 ```clojure
-(defn add-output [int-code v]
-  (update int-code :outputs conj v))
 (defn inputs [int-code]
   (:inputs int-code))
 (defn drop-inputs
   ([int-code] (drop-inputs int-code 1))
   ([int-code n] (update int-code :inputs (partial drop n))))
+(defn outputs [int-code]
+  (:outputs int-code))
+(defn add-output [int-code v]
+  (update int-code :outputs conj v))
 ```
 
 Before we get to the new instructions for reading input and writing output, we need to first handle parameter modes,
@@ -157,7 +160,7 @@ returns a `:diagnostic-error` to investigate.
 ```clojure
 (defn part1 [input]
   (let [intcode (ic/parse-input input [1])
-        output (-> intcode ic/run-to-completion :outputs)]
+        output (-> intcode ic/run-to-completion ic/outputs)]
     (if (every? zero? (butlast output))
       (last output)
       {:diagnostic-error (butlast output)})))
@@ -217,7 +220,7 @@ new Intcode system!
 (defn program-outputs [program single-input]
   (-> (ic/parse-input program [single-input])
       (ic/run-to-completion)
-      :outputs))
+      (ic/outputs)))
 
 (defn part1 [input]
   (let [output (program-outputs input 1)]

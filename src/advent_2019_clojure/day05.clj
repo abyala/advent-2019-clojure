@@ -4,7 +4,7 @@
 (defn program-outputs [program single-input]
   (-> (ic/parse-input program [single-input])
       (ic/run-to-completion)
-      :outputs))
+      (ic/outputs)))
 
 (defn part1 [input]
   (let [output (program-outputs input 1)]

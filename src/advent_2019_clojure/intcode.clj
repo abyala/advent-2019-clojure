@@ -39,13 +39,15 @@
     :immediate value))
 (def param-immediate-value :value)
 
-(defn add-output [int-code v]
-  (update int-code :outputs conj v))
 (defn inputs [int-code]
   (:inputs int-code))
 (defn drop-inputs
   ([int-code] (drop-inputs int-code 1))
   ([int-code n] (update int-code :inputs (partial drop n))))
+(defn outputs [int-code]
+  (:outputs int-code))
+(defn add-output [int-code v]
+  (update int-code :outputs conj v))
 
 (defn- arithmetic-instruction [f int-code]
   (let [[a b c] (current-params int-code 3)]
