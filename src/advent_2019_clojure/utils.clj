@@ -34,3 +34,8 @@
   [input]
   (-> (str/replace input "\r" "")
       (str/split #"\n\n")))
+
+(defn map-to-first-index [coll]
+  (reduce (fn [m [idx v]] (if-not (m v) (assoc m v idx) m))
+          {}
+          (map-indexed vector coll)))
