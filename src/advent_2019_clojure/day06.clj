@@ -17,10 +17,9 @@
        rest))
 
 (defn part1 [input]
-  (let [orbits (parse-orbits input)]
-    (transduce (map (comp count (partial path-to-com orbits) key))
-               +
-               orbits)))
+  (let [orbits (parse-orbits input)
+        paths (partial path-to-com orbits)]
+    (transduce (map (comp count paths key)) + orbits)))
 
 (defn part2 [input]
   (let [orbits (parse-orbits input)

@@ -49,14 +49,20 @@ map, run 3 transformations -- take the key, calculate the path, and count the le
 output values together using `+`.
 
 ```clojure
-; Chosen solution using transduce.
+; Original solution using transduce.
 (defn part1 [input]
   (let [orbits (parse-orbits input)]
     (transduce (map (comp count (partial path-to-com orbits) key))
                +
                orbits)))
 
-; Equivalent solution 
+; Chosen solution using transduce, looking even simpler
+(defn part1 [input]
+  (let [orbits (parse-orbits input)
+        paths (partial path-to-com orbits)]
+    (transduce (map (comp count paths key)) + orbits)))
+
+; Equivalent solution without transduce
 (defn part1 [input]
   (let [orbits (parse-orbits input)]
     (->> orbits
