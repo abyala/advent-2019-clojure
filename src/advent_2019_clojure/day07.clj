@@ -5,7 +5,8 @@
 
 (defn run-amplifier-series [input phases]
   (first (reduce (fn [previous-outputs phase-setting]
-             (-> (ic/parse-input input (cons phase-setting previous-outputs))
+             (-> (ic/parse-input input)
+                 (ic/add-inputs (cons phase-setting previous-outputs))
                  (ic/run-to-completion)
                  (ic/outputs)))
            [0]

@@ -1,14 +1,20 @@
 (ns advent-2019-clojure.intcode
   (:require
     [advent-2019-clojure.utils :refer [parse-long]]
+    [clojure.core.async :as async :refer [>!! <!! <! go chan mult tap close!]]
     [clojure.string :as str]))
 
-(defn parse-input
-  ([s] (parse-input s []))
-  ([s inputs] {:instruction-pointer 0
-               :addresses           (reduce-kv (fn [m k v] (assoc m k (parse-long v))) {} (str/split s #","))
-               :inputs              inputs
-               :outputs             []}))
+(defn parse-input [s]
+  (let [out-chan (chan)
+        out-mult (mult out-chan)
+        out-copy-chan (chan 1000)]
+    (tap out-mult out-copy-chan)
+    {:instruction-pointer 0
+     :addresses           (reduce-kv (fn [m k v] (assoc m k (parse-long v))) {} (str/split s #","))
+     :input               (chan 1000)
+     :output              {:channel   out-chan
+                           :mult      out-mult
+                           :copy-chan out-copy-chan}}))
 
 (defn current-op [{:keys [instruction-pointer addresses]}]
   (-> addresses
@@ -39,15 +45,17 @@
     :immediate value))
 (def param-immediate-value :value)
 
-(defn inputs [int-code]
-  (:inputs int-code))
-(defn drop-inputs
-  ([int-code] (drop-inputs int-code 1))
-  ([int-code n] (update int-code :inputs (partial drop n))))
+(defn add-input [int-code v]
+  (>!! (:input int-code) v)
+  int-code)
+(defn add-inputs [int-code coll]
+  (async/onto-chan!! (:input int-code) coll false)
+  int-code)
 (defn outputs [int-code]
-  (:outputs int-code))
+  (<!! (async/into [] (get-in int-code [:output :copy-chan]))))
 (defn add-output [int-code v]
-  (update int-code :outputs conj v))
+  (>!! (get-in int-code [:output :channel]) v)
+  int-code)
 
 (defn- arithmetic-instruction [f int-code]
   (let [[a b c] (current-params int-code 3)]
@@ -56,11 +64,10 @@
                                                         (param-value int-code b)))
         (advance-instruction-pointer 4))))
 (defn- input-instruction [int-code]
-  (let [[input] (inputs int-code)
+  (let [input (<!! (:input int-code))
         address (-> int-code (current-params 1) first param-immediate-value)]
     (-> int-code
         (set-address-value address input)
-        (drop-inputs)
         (advance-instruction-pointer 2))))
 (defn- output-instruction [int-code]
   (let [output (param-value int-code (-> int-code (current-params 1) first))]
@@ -79,6 +86,10 @@
                                                                (param-value int-code b))
                                                        1 0))
         (advance-instruction-pointer 4))))
+(defn- halt-instruction [int-code]
+  (go (close! (:input int-code)))
+  (go (close! (get-in int-code [:output :channel])))
+  (assoc int-code :halted? true))
 
 (defmulti run-instruction current-op)
 (defmethod run-instruction 1 [int-code] (arithmetic-instruction + int-code))
@@ -89,9 +100,9 @@
 (defmethod run-instruction 6 [int-code] (jump-if-instruction zero? int-code))
 (defmethod run-instruction 7 [int-code] (compare-instruction < int-code))
 (defmethod run-instruction 8 [int-code] (compare-instruction = int-code))
-(defmethod run-instruction 99 [_] nil)
+(defmethod run-instruction 99 [int-code] (halt-instruction int-code))
 
 (defn run-to-completion [int-code]
   (->> (iterate run-instruction int-code)
-       (take-while some?)
-       last))
+       (filter :halted?)
+       first))

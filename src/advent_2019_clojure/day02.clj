@@ -1,7 +1,5 @@
 (ns advent-2019-clojure.day02
-  (:require
-    [advent-2019-clojure.intcode :as ic]
-    [advent-2019-clojure.utils :refer [parse-long]]))
+  (:require [advent-2019-clojure.intcode :as ic]))
 
 (defn output [int-code noun verb]
   (-> int-code

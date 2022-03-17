@@ -2,7 +2,8 @@
   (:require [advent-2019-clojure.intcode :as ic]))
 
 (defn program-outputs [program single-input]
-  (-> (ic/parse-input program [single-input])
+  (-> (ic/parse-input program)
+      (ic/add-input single-input)
       (ic/run-to-completion)
       (ic/outputs)))
 
