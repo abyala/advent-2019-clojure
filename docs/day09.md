@@ -124,3 +124,65 @@ unify the logic between the two parts, and then call it a day!
 (defn part1 [input] (solve 1 input))
 (defn part2 [input] (solve 2 input))
 ```
+
+---
+
+## Refactoring
+
+Every time I create a new opcode instruction, I forget to advance the counter. It's not a lot of work, but a function
+that adds values within the Intcode is inherently different from the process of moving the pointer. So, I decided to
+refactor out a common function called `run-and-advance`, which takes in the actual function we want to run on the
+Incode based on the opcode, executes it along with passing in the parameters for that opcode, and then moves the
+instruction pointer based on the number of parameters.
+
+```clojure
+(defn- run-and-advance [f num-params int-code]
+  (-> (f int-code (current-params int-code num-params))
+      (advance-instruction-pointer (inc num-params))))
+```
+
+It's a simple function, but it lets us change all of our business functions to be simpler.  For example, here is the
+before and after for 
+
+```clojure
+; Before refactoring.
+(defn- arithmetic-instruction [f int-code]
+  (let [[a b c] (current-params int-code 3)
+        target-address (param-address-value int-code c)]
+    (-> int-code
+        (set-address-value target-address (f (param-value int-code a)
+                                             (param-value int-code b)))
+        (advance-instruction-pointer 4))))
+
+(defmethod run-instruction 1 [int-code] (arithmetic-instruction + int-code))
+(defmethod run-instruction 2 [int-code] (arithmetic-instruction * int-code))
+        
+
+; After refactoring
+; Notice how much simpler the arithmetic-instruction code is, being a couple of `let` bindings and the single
+; expression. The run-instruction multi-method is slightly trickier, in that it has to say that it wants to run the
+; arithmetic instruction and then advance accordingly, but that seems more appropriate than keeping it in the
+; arithmetic-instruction itself... I think.
+(defn- arithmetic-instruction [f int-code params]
+  (let [[a b c] params
+        target-address (param-address-value int-code c)]
+    (set-address-value int-code target-address (f (param-value int-code a)
+                                                  (param-value int-code b)))))
+(defmethod run-instruction 1 [int-code] (run-and-advance (partial arithmetic-instruction +) 3 int-code))
+(defmethod run-instruction 2 [int-code] (run-and-advance (partial arithmetic-instruction *) 3 int-code))
+```
+
+We can then apply this to all of the instructions other than the jump instructions, since those don't always advance
+the instruction pointer by a set amount.
+
+```clojure
+(defmethod run-instruction 1 [int-code] (run-and-advance (partial arithmetic-instruction +) 3 int-code))
+(defmethod run-instruction 2 [int-code] (run-and-advance (partial arithmetic-instruction *) 3 int-code))
+(defmethod run-instruction 3 [int-code] (run-and-advance input-instruction 1 int-code))
+(defmethod run-instruction 4 [int-code] (run-and-advance output-instruction 1 int-code))
+(defmethod run-instruction 5 [int-code] (jump-if-instruction (complement zero?) int-code))
+(defmethod run-instruction 6 [int-code] (jump-if-instruction zero? int-code))
+(defmethod run-instruction 7 [int-code] (run-and-advance (partial compare-instruction <) 3 int-code))
+(defmethod run-instruction 8 [int-code] (run-and-advance (partial compare-instruction =) 3 int-code))
+(defmethod run-instruction 9 [int-code] (run-and-advance adjust-relative-base 1 int-code))
+```

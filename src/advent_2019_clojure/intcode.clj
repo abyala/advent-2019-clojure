@@ -63,43 +63,36 @@
 (defn chain-outputs-to [output-int-code input-int-code]
   (tap (get-in output-int-code [:output :mult]) (:input input-int-code)))
 
-(defn- arithmetic-instruction [f int-code]
-  (let [[a b c] (current-params int-code 3)
+(defn- run-and-advance [f num-params int-code]
+  (-> (f int-code (current-params int-code num-params))
+      (advance-instruction-pointer (inc num-params))))
+
+(defn- arithmetic-instruction [f int-code params]
+  (let [[a b c] params
         target-address (param-address-value int-code c)]
-    (-> int-code
-        (set-address-value target-address (f (param-value int-code a)
-                                             (param-value int-code b)))
-        (advance-instruction-pointer 4))))
-(defn- input-instruction [int-code]
+    (set-address-value int-code target-address (f (param-value int-code a)
+                                         (param-value int-code b)))))
+(defn- input-instruction [int-code [param]]
   (let [input (<!! (:input int-code))
-        [param] (current-params int-code 1)
         target-address (param-address-value int-code param)]
-    (-> int-code
-        (set-address-value target-address input)
-        (advance-instruction-pointer 2))))
-(defn- output-instruction [int-code]
-  (let [output (param-value int-code (-> int-code (current-params 1) first))]
-    (-> int-code
-        (add-output output)
-        (advance-instruction-pointer 2))))
+    (set-address-value int-code target-address input)))
+(defn- output-instruction [int-code [param]]
+  (let [output (param-value int-code param)]
+    (add-output int-code output)))
 (defn- jump-if-instruction [pred int-code]
   (let [[a b] (current-params int-code 2)]
     (if (pred (param-value int-code a))
       (set-instruction-pointer int-code (param-value int-code b))
       (advance-instruction-pointer int-code 3))))
-(defn- compare-instruction [pred int-code]
-  (let [[a b c] (current-params int-code 3)
+(defn- compare-instruction [pred int-code params]
+  (let [[a b c] params
         target-address (param-address-value int-code c)]
-    (-> int-code
-        (set-address-value target-address (if (pred (param-value int-code a)
-                                                    (param-value int-code b))
-                                            1 0))
-        (advance-instruction-pointer 4))))
-(defn- adjust-relative-base [int-code]
-  (let [adjustment (param-value int-code (-> int-code (current-params 1) first))]
-    (-> int-code
-        (update :relative-base + adjustment)
-        (advance-instruction-pointer 2))))
+    (set-address-value int-code target-address (if (pred (param-value int-code a)
+                                                         (param-value int-code b))
+                                                 1 0))))
+(defn- adjust-relative-base [int-code params]
+  (let [adjustment (param-value int-code (first params))]
+    (update int-code :relative-base + adjustment)))
 
 (defn- halt-instruction [int-code]
   (go (close! (:input int-code)))
@@ -107,15 +100,15 @@
   (assoc int-code :halted? true))
 
 (defmulti run-instruction current-op)
-(defmethod run-instruction 1 [int-code] (arithmetic-instruction + int-code))
-(defmethod run-instruction 2 [int-code] (arithmetic-instruction * int-code))
-(defmethod run-instruction 3 [int-code] (input-instruction int-code))
-(defmethod run-instruction 4 [int-code] (output-instruction int-code))
+(defmethod run-instruction 1 [int-code] (run-and-advance (partial arithmetic-instruction +) 3 int-code))
+(defmethod run-instruction 2 [int-code] (run-and-advance (partial arithmetic-instruction *) 3 int-code))
+(defmethod run-instruction 3 [int-code] (run-and-advance input-instruction 1 int-code))
+(defmethod run-instruction 4 [int-code] (run-and-advance output-instruction 1 int-code))
 (defmethod run-instruction 5 [int-code] (jump-if-instruction (complement zero?) int-code))
 (defmethod run-instruction 6 [int-code] (jump-if-instruction zero? int-code))
-(defmethod run-instruction 7 [int-code] (compare-instruction < int-code))
-(defmethod run-instruction 8 [int-code] (compare-instruction = int-code))
-(defmethod run-instruction 9 [int-code] (adjust-relative-base int-code))
+(defmethod run-instruction 7 [int-code] (run-and-advance (partial compare-instruction <) 3 int-code))
+(defmethod run-instruction 8 [int-code] (run-and-advance (partial compare-instruction =) 3 int-code))
+(defmethod run-instruction 9 [int-code] (run-and-advance adjust-relative-base 1 int-code))
 (defmethod run-instruction 99 [int-code] (halt-instruction int-code))
 
 (defn run-to-completion [int-code]
