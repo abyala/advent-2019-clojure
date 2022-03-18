@@ -2,6 +2,7 @@
 
 * [Problem Statement](https://adventofcode.com/2019/day/9)
 * [Solution code](https://github.com/abyala/advent-2019-clojure/blob/main/src/advent_2019_clojure/day09.clj)
+* [Intcode code](https://github.com/abyala/advent-2019-clojure/blob/main/src/advent_2019_clojure/intcode.clj)
 
 ---
 

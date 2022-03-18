@@ -8,4 +8,6 @@
 | 4     | [blog](docs/day04.md) | [source](src/advent_2019_clojure/day04.clj) |
 | 5     | [blog](docs/day05.md) | [source](src/advent_2019_clojure/day05.clj) |
 | 6     | [blog](docs/day06.md) | [source](src/advent_2019_clojure/day06.clj) |
+| 7     | [blog](docs/day07.md) | [source](src/advent_2019_clojure/day07.clj) |
 | 8     | [blog](docs/day08.md) | [source](src/advent_2019_clojure/day08.clj) |
+| 9     | [blog](docs/day09.md) | [source](src/advent_2019_clojure/day09.clj) |
