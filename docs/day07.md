@@ -113,7 +113,7 @@ too bad.
 
 ---
 
-# Part 1
+## Part 1
 
 For today's problem, we need to chain Intcode machines together. There will be five machines, and the output of each
 one becomes the input for the next one, where the first Intcode gets initialized with a zero. In the end, we'll need
@@ -163,7 +163,7 @@ then we calculate the max value to get our answer.
 
 ---
 
-# Part 2
+## Part 2
 
 There's very little work to be done for part 2, as there are only two small changes from part 1. First of all, the 
 amplifier series must become an amplifier loop, where the output of Intcode 5 feeds into the input of Intcode 1. So
