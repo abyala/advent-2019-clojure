@@ -48,14 +48,13 @@
 (defn add-input [int-code v]
   (>!! (:input int-code) v)
   int-code)
-(defn add-inputs [int-code coll]
-  (async/onto-chan!! (:input int-code) coll false)
-  int-code)
 (defn outputs [int-code]
   (<!! (async/into [] (get-in int-code [:output :copy-chan]))))
 (defn add-output [int-code v]
   (>!! (get-in int-code [:output :channel]) v)
   int-code)
+(defn chain-outputs-to [output-int-code input-int-code]
+  (tap (get-in output-int-code [:output :mult]) (:input input-int-code)))
 
 (defn- arithmetic-instruction [f int-code]
   (let [[a b c] (current-params int-code 3)]
