@@ -52,15 +52,15 @@
     (+ (relative-base int-code) value)
     value))
 
-(defn add-input [int-code v]
+(defn add-input! [int-code v]
   (>!! (:input int-code) v)
   int-code)
-(defn outputs [int-code]
+(defn outputs! [int-code]
   (<!! (async/into [] (get-in int-code [:output :copy-chan]))))
-(defn add-output [int-code v]
+(defn add-output! [int-code v]
   (>!! (get-in int-code [:output :channel]) v)
   int-code)
-(defn chain-outputs-to [output-int-code input-int-code]
+(defn chain-outputs-to! [output-int-code input-int-code]
   (tap (get-in output-int-code [:output :mult]) (:input input-int-code)))
 
 (defn- run-and-advance [f num-params int-code]
@@ -72,13 +72,13 @@
         target-address (param-address-value int-code c)]
     (set-address-value int-code target-address (f (param-value int-code a)
                                          (param-value int-code b)))))
-(defn- input-instruction [int-code [param]]
+(defn- input-instruction! [int-code [param]]
   (let [input (<!! (:input int-code))
         target-address (param-address-value int-code param)]
     (set-address-value int-code target-address input)))
-(defn- output-instruction [int-code [param]]
+(defn- output-instruction! [int-code [param]]
   (let [output (param-value int-code param)]
-    (add-output int-code output)))
+    (add-output! int-code output)))
 (defn- jump-if-instruction [pred int-code]
   (let [[a b] (current-params int-code 2)]
     (if (pred (param-value int-code a))
@@ -102,8 +102,8 @@
 (defmulti run-instruction current-op)
 (defmethod run-instruction 1 [int-code] (run-and-advance (partial arithmetic-instruction +) 3 int-code))
 (defmethod run-instruction 2 [int-code] (run-and-advance (partial arithmetic-instruction *) 3 int-code))
-(defmethod run-instruction 3 [int-code] (run-and-advance input-instruction 1 int-code))
-(defmethod run-instruction 4 [int-code] (run-and-advance output-instruction 1 int-code))
+(defmethod run-instruction 3 [int-code] (run-and-advance input-instruction! 1 int-code))
+(defmethod run-instruction 4 [int-code] (run-and-advance output-instruction! 1 int-code))
 (defmethod run-instruction 5 [int-code] (jump-if-instruction (complement zero?) int-code))
 (defmethod run-instruction 6 [int-code] (jump-if-instruction zero? int-code))
 (defmethod run-instruction 7 [int-code] (run-and-advance (partial compare-instruction <) 3 int-code))

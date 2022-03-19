@@ -5,14 +5,14 @@
 
 (defn run-amplifier-loop [input phases]
   (let [int-codes (mapv (fn [phase] (-> (ic/parse-input input)
-                                       (ic/add-input phase)))
+                                        (ic/add-input! phase)))
                        phases)]
-    (ic/add-input (first int-codes) 0)
-    (run! (fn [[outputter inputter]] (ic/chain-outputs-to outputter inputter))
+    (ic/add-input! (first int-codes) 0)
+    (run! (fn [[outputter inputter]] (ic/chain-outputs-to! outputter inputter))
           (partition 2 1 (conj int-codes (first int-codes))))
     (run! #(future (ic/run-to-completion %))
           int-codes)
-    (->> int-codes last ic/outputs last)))
+    (->> int-codes last ic/outputs! last)))
 
 (defn solve [possible-phases input]
   (->> (combo/permutations possible-phases)

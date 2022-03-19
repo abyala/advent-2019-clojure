@@ -9,7 +9,7 @@
 (defn address-after-all-instructions [input address]
   (-> input parse-input run-to-completion (address-value address)))
 (defn outputs-after-all-instructions [input]
-  (-> input parse-input run-to-completion outputs))
+  (-> input parse-input run-to-completion outputs!))
 
 (deftest add-test
   (testing "Position mode"
@@ -51,19 +51,19 @@
 
 (deftest load-input-test
   (testing "Position mode"
-    (let [int-code (-> (parse-input "3,50") (add-input 456) run-instruction)]
+    (let [int-code (-> (parse-input "3,50") (add-input! 456) run-instruction)]
       (is (= 2 (:instruction-pointer int-code)))
       (is (= 456 (address-value int-code 50)))
       (is (zero? (address-value int-code 500)))))
   (testing "Relative mode"
-    (let [int-code (-> (parse-input "109,1,203,2,99") (add-input 456) run-to-completion)]
+    (let [int-code (-> (parse-input "109,1,203,2,99") (add-input! 456) run-to-completion)]
       (is (= 203 (address-value int-code 2)))
       (is (= 456 (address-value int-code 3))))))
 
 (deftest output-test
-  (let [int-code (-> (parse-input "3,40,4,40,99") (add-input 456) run-instruction run-instruction run-instruction)]
+  (let [int-code (-> (parse-input "3,40,4,40,99") (add-input! 456) run-instruction run-instruction run-instruction)]
     (is (= 4 (:instruction-pointer int-code)))
-    (is (= [456] (outputs int-code)))))
+    (is (= [456] (outputs! int-code)))))
 
 (deftest jump-if-true-test
   (testing "Position mode"

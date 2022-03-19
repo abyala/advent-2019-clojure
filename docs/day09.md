@@ -127,7 +127,7 @@ unify the logic between the two parts, and then call it a day!
 
 ---
 
-## Refactoring
+## Refactoring #1: Run and Advance
 
 Every time I create a new opcode instruction, I forget to advance the counter. It's not a lot of work, but a function
 that adds values within the Intcode is inherently different from the process of moving the pointer. So, I decided to
@@ -186,3 +186,23 @@ the instruction pointer by a set amount.
 (defmethod run-instruction 8 [int-code] (run-and-advance (partial compare-instruction =) 3 int-code))
 (defmethod run-instruction 9 [int-code] (run-and-advance adjust-relative-base 1 int-code))
 ```
+
+---
+
+## Refactoring #2: Naming Convention
+
+It occurred to me that several of the functions in the Intcode are inherently impure, namely, those having to do with
+the input and output channels. As a result, I decided to adopt the convention of naming these functions with a trailing
+exclamation mark. This is mostly a marker to help when each day's code calls an impure function, rather than just
+helping the logic within Intcode itself.
+
+The new public function names with exclamation marks are:
+
+* `add-input!`
+* `add-output!`
+* `outputs!` (because it pulls data out of the copy channel the one and only time it's possible)
+* `chain-outputs-to!`
+
+The new private function names with exclamation marks are:
+* `input-instruction!`
+* `output-instruction!`
