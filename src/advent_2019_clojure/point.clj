@@ -1,5 +1,7 @@
 (ns advent-2019-clojure.point
-  (:require [advent-2019-clojure.utils :refer [abs]]))
+  (:require
+    [advent-2019-clojure.utils :refer [abs]]
+    [clojure.string :as str]))
 
 (def origin [0 0])
 (defn manhattan-distance
@@ -11,3 +13,11 @@
 (defn move-down [point] (update point 1 dec))
 (defn move-left [point] (update point 0 dec))
 (defn move-right [point] (update point 0 inc))
+
+(defn parse-to-char-coords
+  "Given an input string, returns a lazy sequence of [[x y] c] tuples of [x y] coords to each character c."
+  [input]
+  (->> (str/split-lines input)
+       (map-indexed (fn [y line]
+                      (map-indexed (fn [x c] [[x y] c]) line)))
+       (apply concat)))

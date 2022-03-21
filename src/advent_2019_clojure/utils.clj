@@ -19,10 +19,14 @@
     (update m k + n)
     (assoc m k n)))
 
-(defn map-conj [m k v]
-  (if (m k)
-    (update m k conj v)
-    (assoc m k [v])))
+(defn map-conj
+  ([m k v] (map-conj #(vector %) m k v))
+  ([collection-supplier m k v] (if (m k)
+                                 (update m k conj v)
+                                 (assoc m k (collection-supplier v)))))
+
+(defn map-conj-sorted [comparator m k v]
+  (map-conj (partial sorted-set-by comparator) m k v))
 
 (defn keep-indexes-when [f coll]
   (keep-indexed (fn [idx v] (when (f v) idx)) coll))
@@ -39,3 +43,8 @@
   (reduce (fn [m [idx v]] (if-not (m v) (assoc m v idx) m))
           {}
           (map-indexed vector coll)))
+
+(defn interleave-all [colls]
+  (when (seq colls)
+    (lazy-seq (concat (map first colls)
+                      (interleave-all (->> colls (map rest) (filter seq)))))))
