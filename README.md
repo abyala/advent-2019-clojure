@@ -1,7 +1,7 @@
 # Advent of Code 2019
 
-| Day # | Blog Post | Source |
-| ----- | --------- | ------ |
+| Day # | Blog Post             | Source                                      |
+|-------|-----------------------|---------------------------------------------|
 | 1     | [blog](docs/day01.md) | [source](src/advent_2019_clojure/day01.clj) |
 | 2     | [blog](docs/day02.md) | [source](src/advent_2019_clojure/day02.clj) |
 | 3     | [blog](docs/day03.md) | [source](src/advent_2019_clojure/day03.clj) |
@@ -12,3 +12,5 @@
 | 8     | [blog](docs/day08.md) | [source](src/advent_2019_clojure/day08.clj) |
 | 9     | [blog](docs/day09.md) | [source](src/advent_2019_clojure/day09.clj) |
 | 10    | [blog](docs/day10.md) | [source](src/advent_2019_clojure/day10.clj) |
+| 11    | [blog](docs/day11.md) | TBD                                         |
+| 12    | [blog](docs/day12.md) | [source](src/advent_2019_clojure/day12.clj) |

@@ -10,26 +10,11 @@
 (deftest part1-test
   (are [expected num-steps input] (= expected (part1 input num-steps))
                                   179 10 test-data-1
-                                  ;"<x=-1, y=0, z=2>\n<x=2, y=-10, z=-7>\n<x=4, y=-8, z=8>\n<x=3, y=5, z=-1>"
-
                                   1940 100 test-data-2
-                                  ;"<x=-8, y=-10, z=0>\n<x=5, y=5, z=10>\n<x=2, y=-7, z=3>\n<x=9, y=-8, z=-3>"
-
-                                  7687 1000 puzzle-data))
-
-(deftest part1-2-test
-  (are [expected num-steps input] (= expected (part1-2 input num-steps))
-                                  179 10 test-data-1
-                                  ;"<x=-1, y=0, z=2>\n<x=2, y=-10, z=-7>\n<x=4, y=-8, z=8>\n<x=3, y=5, z=-1>"
-
-                                  1940 100 test-data-2
-                                  ;"<x=-8, y=-10, z=0>\n<x=5, y=5, z=10>\n<x=2, y=-7, z=3>\n<x=9, y=-8, z=-3>"
-
                                   7687 1000 puzzle-data))
 
 (deftest part2-test
   (are [expected input] (= expected (part2 input))
                         2772 test-data-1
                         4686774924 test-data-2
-                        334945516288044 puzzle-data)
-  )
+                        334945516288044 puzzle-data))

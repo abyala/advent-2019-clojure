@@ -1,5 +1,7 @@
 (ns advent-2019-clojure.utils
-  (:require [clojure.string :as str]))
+  (:require
+    [clojure.math.numeric-tower :as math]
+    [clojure.string :as str]))
 
 (defn parse-long [s] (try
                        (Long/parseLong s)
@@ -48,3 +50,8 @@
   (when (seq colls)
     (lazy-seq (concat (map first colls)
                       (interleave-all (->> colls (map rest) (filter seq)))))))
+
+(defn lcm-rf
+  ([] 1)
+  ([result] result)
+  ([result input] (math/lcm result input)))
