@@ -1,6 +1,5 @@
 (ns advent-2019-clojure.day12
   (:require [advent-2019-clojure.utils :refer [parse-long abs]]
-            [clojure.math.combinatorics :as combo]
             [clojure.math.numeric-tower :as math]
             [clojure.string :as str]))
 
@@ -16,32 +15,29 @@
   (->> input str/split-lines (map parse-moon)))
 
 (defn apply-gravity
-  ([moons] (map #(reduce apply-gravity % moons) moons))
-  ([moon1 moon2] (reduce (fn [acc prop] (apply-gravity acc moon2 prop))
+  ([moon1 moon2] (reduce (fn [acc dim] (apply-gravity acc moon2 dim))
                          moon1
                          all-dimensions))
-  ([moon1 moon2 prop] (->> (map (comp first prop) [moon2 moon1])
+  ([moon1 moon2 dim] (->> (map (comp first dim) [moon2 moon1])
                            (apply compare)
-                           (update-in moon1 [prop 1] +))))
+                           (update-in moon1 [dim 1] +))))
+
+(defn apply-gravities [moons]
+  (map #(reduce apply-gravity % moons) moons))
 
 (defn apply-velocity [moon]
-  (reduce (fn [acc prop] (update-in acc [prop 0] + (get-in acc [prop 1])))
+  (reduce (fn [acc dim] (update-in acc [dim 0] + (get-in acc [dim 1])))
           moon
           all-dimensions))
 (defn apply-velocities [moons]
   (map apply-velocity moons))
 
 (defn take-step [moons]
-  (-> moons apply-gravity apply-velocities))
-
-(defn potential-energy [moon]
-  (reduce + (map (comp abs first) (vals moon))))
-
-(defn kinetic-energy [moon]
-  (reduce + (map (comp abs second) (vals moon))))
+  (-> moons apply-gravities apply-velocities))
 
 (defn total-energy [moon]
-  (* (potential-energy moon) (kinetic-energy moon)))
+  (letfn [(energy [f] (reduce + (map (comp abs f) (vals moon))))]
+    (* (energy first) (energy second))))
 
 (defn part1 [input num-steps]
   (let [moons (parse-input input)]
@@ -49,14 +45,6 @@
          (map total-energy)
          (reduce +))))
 
-(defn part2-will-not-complete [input]
-  (reduce (fn [seen state] (if (seen state)
-                             (reduced (count seen))
-                             (conj seen state)))
-          #{}
-          (iterate take-step (parse-input input))))
-
-(slurp "resources/day12_puzzle.txt")
 (defn parse-input2 [input]
   (let [lines (str/split-lines input)
         num-lines (count lines)]
@@ -75,9 +63,6 @@
         new-velocities (mapv + velocities velocity-changes)
         new-positions (mapv + positions new-velocities)]
     [new-positions new-velocities]))
-
-(defn take-step2 [moons]
-  (map #(apply move-moons %) moons))
 
 (defn energy-calc [f moons]
   (->> moons
