@@ -14,3 +14,4 @@
 | 10    | [blog](docs/day10.md) | [source](src/advent_2019_clojure/day10.clj) |
 | 11    | [blog](docs/day11.md) | TBD                                         |
 | 12    | [blog](docs/day12.md) | [source](src/advent_2019_clojure/day12.clj) |
+| 16    | [blog](docs/day16.md) | [source](src/advent_2019_clojure/day16.clj) |
