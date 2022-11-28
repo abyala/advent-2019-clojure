@@ -13,6 +13,8 @@
 (defn move-down [point] (update point 1 dec))
 (defn move-left [point] (update point 0 dec))
 (defn move-right [point] (update point 0 inc))
+(defn adjacent-points [point]
+  ((juxt move-up move-left move-right move-down) point))
 
 (defn parse-to-char-coords
   "Given an input string, returns a lazy sequence of [[x y] c] tuples of [x y] coords to each character c."
